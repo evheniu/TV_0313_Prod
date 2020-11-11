@@ -23,13 +23,15 @@ AutoItSetOption ( "WinWaitDelay", 500 )
 
 HotKeySet("q", "_quit")
 
-Func _Date($iReturnTime = 1)
-    Return @MDAY & '.' & @MON & '.' & @YEAR
-EndFunc
+$sFont = "Arial"
+$title0 = "SAP Easy Access"
+$title1 = "Material Document List"
 
-Global $sFont = "Arial"
-Global $title0 = "SAP Easy Access"
-Global $title1 = "Material Document List"
+$nmb51 = "/nmb51{enter}"
+$artMin4 = "4000000"
+$artMax4 = "4999999"
+$cutPlant = "0313"
+$movement = "101"
 
 Global $Q3N1MFB = "0"
 Global $Q3FB = "0"
@@ -41,7 +43,11 @@ Global $Q3RB60 = "0"
 Global $Q3RC40 = "0"
 Global $Q3RC60 = "0"
 
-$nmb51 = "/nmb51{enter}"
+;~  Begin run
+
+Func _Date($iReturnTime = 1)
+    Return @MDAY & '.' & @MON & '.' & @YEAR
+EndFunc
 
 Func _SetColor($data, $min, $max, $labelID)
 	If $data > $max Then
@@ -217,7 +223,7 @@ Func _ShowDeliveredOrdersAudi()
     GUICtrlSetBkColor($Q3FBNORMlt, 0x0011DD15)
 
     GUISetState(@SW_SHOW,$winDelivered)
-    GUISetState(@SW_MAXIMIZE)
+    ;~ GUISetState(@SW_MAXIMIZE)
 
     _SetColor($Q3N1MFB, 170, 570, $Q3FBNORMDl)
     _SetColor($Q3N1MFB, 170, 570, $Q3FBNORMl)
@@ -268,7 +274,7 @@ Func _start()
         $Q3RB60 = "/Q3RB60"
         $Q3RC40 = "/Q3RC40"
         $Q3RC60 = "/Q3RC60"
-;~    _chooseData()
+   _chooseData()
    _delDelivered()
    _show()
 EndFunc
@@ -287,27 +293,34 @@ Func _show()
 Func _GetDataDeliver($point)
     $vData = "0"
     _ClipBoard_SetData($vData)
-    Send("4000000")
+    _ClipBoard_SetData($artMin4)
+    Send('+{INS}')
     Send("{TAB}")
-    Send("4999999")
+    _ClipBoard_SetData($artMax4)
+    Send('+{INS}')
     Send("{TAB 2}")
     Send("^a")
-    Send("0313")
+    _ClipBoard_SetData($cutPlant)
+    Send('+{INS}')
     Send("{DOWN}")
     Send("^a")
-    Send("0313")
+    _ClipBoard_SetData($cutPlant)
+    Send('+{INS}')
     Send("{DOWN 4}")
     Send("^a")
-    Send("101")
+    _ClipBoard_SetData($movement)
+    Send('+{INS}')
     Send("{DOWN 2}")
     Send("^a")
     Send("{DEL}")
-    Send("{DOWN 5}")
+    Send("{DOWN 3}")
     Send("^a")
-    Send(_Date())
+    _ClipBoard_SetData(_Date())
+    Send('+{INS}')
     Send("{DOWN 4}")
     Send("^a")
-    Send($point)
+    _ClipBoard_SetData($point)
+    Send('+{INS}')
     Send("{F8}")
 	While 1
 	   WinActivate($title1)
@@ -322,7 +335,8 @@ Func _GetDataDeliver($point)
         $point = "0"
     EndIf
     Sleep(1000)
-    ControlSend($title1, "", "[CLASS:Edit; INSTANCE:1; ID:1001]", $nmb51 & "{ENTER}")
+    _ClipBoard_SetData($nmb51)
+    ControlSend($title1, "", "[CLASS:Edit; INSTANCE:1; ID:1001]", ClipGet() & "{ENTER}")
 	While 1
 	   WinActivate($title1)
 	      If ControlGetFocus($title1) <> "SAPALVGrid1" Then ExitLoop
@@ -334,12 +348,13 @@ Func _chooseData()
 	WinWait( $title0, "", 0 )
 	If WinExists( $title0 ) Then
 		WinActivate( $title0 )
-	EndIf
-	   WinSetState($title0,"",@SW_MAXIMIZE)
-	   ControlSend($title0, "", "[CLASS:Edit; INSTANCE:1; ID:1001]", $nmb51 & "{ENTER}")
-	   WinWait( $title1, "", 0 )
+    EndIf
+        _ClipBoard_SetData($nmb51)
+	    WinSetState($title0,"",@SW_MAXIMIZE)
+	    ControlSend($title0, "", "[CLASS:Edit; INSTANCE:1; ID:1001]",  _ClipBoard_GetData() & "{ENTER}")
+	    WinWait( $title1, "", 0 )
 	If WinExists( $title1 ) Then
-		WinActivate( $title1, "" )
+	    WinActivate( $title1, "" )
 	EndIf
 	While 1
 	   WinActivate($title1)
