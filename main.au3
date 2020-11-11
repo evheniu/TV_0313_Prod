@@ -26,12 +26,26 @@ HotKeySet("q", "_quit")
 $sFont = "Arial"
 $title0 = "SAP Easy Access"
 $title1 = "Material Document List"
+$title2 = "Production Order Information System"
+$title3 = "Order Info System - Order Headers"
+$title4 = "Display Warehouse Stocks of Material on Hand"
 
-$nmb51 = "/nmb51{enter}"
+$vData = "0"
+$nmb51 = "/nmb51"
 $artMin4 = "4000000"
 $artMax4 = "4999999"
 $cutPlant = "0313"
 $movement = "101"
+$nzmb52 = "/nzmb52"
+$ncoois = "/ncoois"
+$n = "/n"
+$sewPlant = "0323"
+$q3new = "/q3new"
+$q3old = "/q3old"
+$sk38new = "/sk38new"
+$sk383old = "/sk38old"
+$proc = "z00001"
+
 
 Global $Q3N1MFB = "0"
 Global $Q3FB = "0"
@@ -43,11 +57,78 @@ Global $Q3RB60 = "0"
 Global $Q3RC40 = "0"
 Global $Q3RC60 = "0"
 
+Global $audiOldOrders = 'Оновлення даних...'
+Global $skodaOldOrders = 'Оновлення даних...'
+Global $audiNewOrders = 'Оновлення даних...'
+Global $skodaNewOrders = 'Оновлення даних...'
+Global $audiStockOrders = 'Оновлення даних...'
+Global $skodaStockOrders = 'Оновлення даних...'
+
 ;~  Begin run
 
 Func _Date($iReturnTime = 1)
     Return @MDAY & '.' & @MON & '.' & @YEAR
 EndFunc
+
+Dim $aDate = StringSplit(@MDAY & '/' & @MON & '/' & @YEAR, '/')
+
+$sDay = _DateDayOfWeekEx(_DateToDayOfWeek($aDate[3], $aDate[2], $aDate[1]), 0)
+
+Func _DateDayOfWeekEx($iDayNum, $iShort = 0)
+	Local Const $aDayOfWeek[8] = ["", "0", "1", "2", "3", "4", "5", "6"]
+	Local Const $aDayOfWeek_Rus[8] = ["", "0", "1", "2", "3", "4", "5", "6"]
+
+	Select
+		Case Not StringIsInt($iDayNum) Or Not StringIsInt($iShort) Or $iDayNum < 1 Or $iDayNum > 7
+			Return SetError(1, 0, "")
+		Case Else
+			Local $sRet = $aDayOfWeek[$iDayNum]
+			If @OSLang = 0419 Then $sRet = $aDayOfWeek_Rus[$iDayNum]
+
+			If $iShort Then
+				$sRet = StringLeft($sRet, 3)
+			EndIf
+
+			Return $sRet
+	EndSelect
+EndFunc
+
+$sDatePast = SubstractDate($sDay)
+
+Func SubstractDate($i)
+    If $i == 1 Then
+       $sDate = _DateAdd('d', -7, _NowCalcDate())
+       $aArray = StringSplit($sDate, "/", 2)
+       $sDatePast = $aArray[2] &"."& $aArray[1] &"."& StringRight($aArray[0], 4)
+    ElseIf $i == 2 Then
+       $sDate = _DateAdd('d', -7, _NowCalcDate())
+       $aArray = StringSplit($sDate, "/", 2)
+       $sDatePast = $aArray[2] &"."& $aArray[1] &"."& StringRight($aArray[0], 4)
+    ElseIf $i == 3 Then
+       $sDate = _DateAdd('d', -7, _NowCalcDate())
+       $aArray = StringSplit($sDate, "/", 2)
+       $sDatePast = $aArray[2] &"."& $aArray[1] &"."& StringRight($aArray[0], 4)
+    ElseIf $i == 4 Then
+       $sDate = _DateAdd('d', -7, _NowCalcDate())
+       $aArray = StringSplit($sDate, "/", 2)
+       $sDatePast = $aArray[2] &"."& $aArray[1] &"."& StringRight($aArray[0], 4)
+    ElseIf $i == 5 Then
+       $sDate = _DateAdd('d', -7, _NowCalcDate())
+       $aArray = StringSplit($sDate, "/", 2)
+       $sDatePast = $aArray[2] &"."& $aArray[1] &"."& StringRight($aArray[0], 4)
+    ElseIf $i == 6 Then
+       $sDate = _DateAdd('d', -5, _NowCalcDate())
+       $aArray = StringSplit($sDate, "/", 2)
+       $sDatePast = $aArray[2] &"."& $aArray[1] &"."& StringRight($aArray[0], 4)
+    ElseIf $i == 0 Then
+       $sDate = _DateAdd('d', -6, _NowCalcDate())
+       $aArray = StringSplit($sDate, "/", 2)
+       $sDatePast = $aArray[2] &"."& $aArray[1] &"."& StringRight($aArray[0], 4)
+ EndIf
+
+ Return $sDatePast
+EndFunc
+
 
 Func _SetColor($data, $min, $max, $labelID)
 	If $data > $max Then
@@ -59,6 +140,7 @@ Func _SetColor($data, $min, $max, $labelID)
      EndIf
 EndFunc
 
+;~ Show window with delivered orders
 Func _ShowDeliveredOrdersAudi()
     Global $winDelivered = GUICreate("Statistic monitor 0313",700,700,-1,-1,-1,BitOr($WS_EX_TOPMOST,$WS_EX_OVERLAPPEDWINDOW))
     GUICtrlCreateLabel("Доставлені замовлення / Dedicated orders",0,10,700,70,$SS_CENTER,-1)
@@ -223,7 +305,7 @@ Func _ShowDeliveredOrdersAudi()
     GUICtrlSetBkColor($Q3FBNORMlt, 0x0011DD15)
 
     GUISetState(@SW_SHOW,$winDelivered)
-    ;~ GUISetState(@SW_MAXIMIZE)
+    GUISetState(@SW_MAXIMIZE)
 
     _SetColor($Q3N1MFB, 170, 570, $Q3FBNORMDl)
     _SetColor($Q3N1MFB, 170, 570, $Q3FBNORMl)
@@ -257,13 +339,144 @@ Func _delDelivered()
     GUIDelete($winDelivered)
 EndFunc
 
+Func _ShowOldOrders()
+
+	Global $mainWindow = GUICreate("Statistic monitor 0313", 700, 700, -1, -1, $WS_OVERLAPPEDWINDOW, $WS_EX_TOPMOST)
+	Global $sFont = "Arial"
+	GUISetFont(50,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
+	GUICtrlCreateLabel('Старі замовлення / Old orders', 10, 10, 680, 50, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(30,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
+	Global $idLabelAudiFon = GUICtrlCreateLabel('Audi', 10, 70, 680, 120, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(110,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idLabelAudi = GUICtrlCreateLabel($audiOldOrders, 10, 150, 680, 180, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(30,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
+	Global $idLabelSkodaFon = GUICtrlCreateLabel('Skoda', 10, 330, 680, 100, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(110,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idLabelSkoda = GUICtrlCreateLabel($skodaOldOrders, 10, 410, 680, 165, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(25,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
+	Global $idDescri = GUICtrlCreateLabel('Ціль залишку не закритих замовлень, шт./день в розкрійному цеху', 10, 577, 680, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idDescri, 0x00428df5  );tut
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idGreenAudi = GUICtrlCreateLabel('Audi < 500', 10, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idGreenAudi, 0x0011DD15)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idYellowAudi = GUICtrlCreateLabel('Audi 500 - 700', 240, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idYellowAudi, $COLOR_YELLOW)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idRedAudi = GUICtrlCreateLabel('Audi > 700', 470, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idRedAudi, $COLOR_RED)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idGreenSk = GUICtrlCreateLabel('Skoda < 200', 10, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idGreenSk, 0x0011DD15)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idYellowSk = GUICtrlCreateLabel('Skoda 200 - 300', 240, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idYellowSk, $COLOR_YELLOW)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idRedSk = GUICtrlCreateLabel('Skoda > 300', 470, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idRedSk, $COLOR_RED)
+
+    GUISetState(@SW_SHOW,$mainWindow)
+	GUISetState(@SW_MAXIMIZE);@SW_MAXIMIZE
+
+	If $skodaOldOrders < 200 Then
+		  GUICtrlSetBkColor($idLabelSkoda, 0x0011DD15)
+		  GUICtrlSetBkColor($idLabelSkodaFon, 0x0011DD15)
+	   ElseIf $skodaOldOrders >= 200 And $skodaOldOrders <= 300 Then
+		  GUICtrlSetBkColor($idLabelSkoda, $COLOR_YELLOW)
+		  GUICtrlSetBkColor($idLabelSkodaFon, $COLOR_YELLOW)
+	   ElseIf $skodaOldOrders > 300 Then
+		  GUICtrlSetBkColor($idLabelSkoda, $COLOR_RED)
+		  GUICtrlSetBkColor($idLabelSkodaFon, $COLOR_RED)
+	   EndIf
+
+	If $audiOldOrders < 500 Then
+		  GUICtrlSetBkColor($idLabelAudi, 0x0011DD15)
+		  GUICtrlSetBkColor($idLabelAudiFon, 0x0011DD15)
+	   ElseIf $audiOldOrders >= 500 And $audiOldOrders <= 700 Then
+		  GUICtrlSetBkColor($idLabelAudi, $COLOR_YELLOW)
+		  GUICtrlSetBkColor($idLabelAudiFon, $COLOR_YELLOW)
+	   ElseIf $audiOldOrders > 700 Then
+		  GUICtrlSetBkColor($idLabelAudi, $COLOR_RED)
+		  GUICtrlSetBkColor($idLabelAudiFon, $COLOR_RED)
+	   EndIf
+EndFunc
+
+Func _delOld()
+    GUIDelete($mainWindow)
+EndFunc
+
+Func _ShowStockOrders()
+
+	Global $mainWindowStock = GUICreate("Statistic monitor 0313", 700, 700, -1, -1, $WS_OVERLAPPEDWINDOW, $WS_EX_TOPMOST)
+	GUISetFont(50,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
+	GUICtrlCreateLabel('Замовлення на складі / Stock level', 10, 10, 680, 50, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(30,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
+	Global $idLabelAudiFonStock = GUICtrlCreateLabel('Audi', 10, 70, 680, 120, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(110,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idLabelAudiStock = GUICtrlCreateLabel($audiStockOrders, 10, 150, 680, 180, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(30,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
+	Global $idLabelSkodaFonStock = GUICtrlCreateLabel('Skoda', 10, 330, 680, 100, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(110,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idLabelSkodaStock = GUICtrlCreateLabel($skodaStockOrders, 10, 410, 680, 165, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUISetFont(25,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
+	Global $idDescriStock = GUICtrlCreateLabel('Ціль замовлень на складі швейного цеху, шт./день', 10, 577, 680, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idDescriStock, 0x00428df5);tut
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idGreenAudiStock = GUICtrlCreateLabel('Audi > 8700', 10, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idGreenAudiStock, 0x0011DD15)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idYellowAudiStock = GUICtrlCreateLabel('Audi 8500 - 8700', 240, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idYellowAudiStock, $COLOR_YELLOW)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idRedAudiStock = GUICtrlCreateLabel('Audi < 8500', 470, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idRedAudiStock, $COLOR_RED)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idGreenSkStock = GUICtrlCreateLabel('Skoda > 2400', 10, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idGreenSkStock, 0x0011DD15)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idYellowSkStock = GUICtrlCreateLabel('Skoda 2200 - 2400', 240, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+	GUICtrlSetBkColor($idYellowSkStock, $COLOR_YELLOW)
+	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
+	Global $idRedSkStock = GUICtrlCreateLabel('Skoda < 2200', 470, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetBkColor($idRedSkStock, $COLOR_RED)
+    
+    GUISetState(@SW_SHOW,$mainWindowStock)
+	GUISetState(@SW_MAXIMIZE);@SW_MAXIMIZE
+
+	If $skodaStockOrders > 2400 Then
+		  GUICtrlSetBkColor($idLabelSkodaStock, 0x0011DD15)
+		  GUICtrlSetBkColor($idLabelSkodaFonStock, 0x0011DD15)
+	   ElseIf $skodaStockOrders >= 2200 And $skodaStockOrders <= 2400 Then
+		  GUICtrlSetBkColor($idLabelSkodaStock, $COLOR_YELLOW)
+		  GUICtrlSetBkColor($idLabelSkodaFonStock, $COLOR_YELLOW)
+	   ElseIf $skodaStockOrders < 2200 Then
+		  GUICtrlSetBkColor($idLabelSkodaStock, $COLOR_RED)
+		  GUICtrlSetBkColor($idLabelSkodaFonStock, $COLOR_RED)
+	   EndIf
+
+	If $audiStockOrders > 8700 Then
+		  GUICtrlSetBkColor($idLabelAudiStock, 0x0011DD15)
+		  GUICtrlSetBkColor($idLabelAudiFonStock, 0x0011DD15)
+	   ElseIf $audiStockOrders >= 8500 And $audiStockOrders <= 8700 Then
+		  GUICtrlSetBkColor($idLabelAudiStock, $COLOR_YELLOW)
+		  GUICtrlSetBkColor($idLabelAudiFonStock, $COLOR_YELLOW)
+	   ElseIf $audiStockOrders < 8500 Then
+		  GUICtrlSetBkColor($idLabelAudiStock, $COLOR_RED)
+		  GUICtrlSetBkColor($idLabelAudiFonStock, $COLOR_RED)
+	   EndIf
+EndFunc
+
+Func _delStock()
+    GUIDelete($mainWindowStock)
+ EndFunc
+
 _start()
 
 Func _start()
-    _ShowDeliveredOrdersAudi()
-   While 1
-	   WinActivate($title0)
-	   If WinActive($title0) Then ExitLoop
+    _ShowOldOrders()
+    While 1
+	    WinActivate($title0)
+	        If WinActive($title0) Then ExitLoop
         WEnd
         $Q3N1MFB = "/Q3N1MFB"
         $Q3FB = "/Q3FB"
@@ -274,25 +487,35 @@ Func _start()
         $Q3RB60 = "/Q3RB60"
         $Q3RC40 = "/Q3RC40"
         $Q3RC60 = "/Q3RC60"
-   _chooseData()
-   _delDelivered()
-   _show()
+        _chooseData($sDatePast)
+        _delOld()
+        _show()
 EndFunc
 
 Func _show()
     $hTimer = TimerInit()
-    While TimerDiff($hTimer)<1*60*1000
-        _ShowDeliveredOrdersAudi()
+    While TimerDiff($hTimer)<5*60*1000
+       _ShowOldOrders()
+       Sleep(30000)
+       _delOld()
+       _ShowStockOrders()
+       Sleep(30000)
+       _delStock()
+       _ShowDeliveredOrdersAudi()
        Sleep(30000)
        _delDelivered()
     WEnd
-       Sleep(500)
-       _start()
+    Sleep(500)
+    _start()
  EndFunc
 
+ Func _clear()
+    ControlClick ('','','[ID:1001]','',1)
+    _ClipBoard_SetData($n)
+    ControlSend('','','[ID:1001]','+{INS}' & '{ENTER}')
+EndFunc
+
 Func _GetDataDeliver($point)
-    $vData = "0"
-    _ClipBoard_SetData($vData)
     _ClipBoard_SetData($artMin4)
     Send('+{INS}')
     Send("{TAB}")
@@ -323,7 +546,7 @@ Func _GetDataDeliver($point)
     Send('+{INS}')
     Send("{F8}")
 	While 1
-	   WinActivate($title1)
+	    WinActivate($title1)
 		  If ControlGetFocus($title1) == "SAPALVGrid1" Then ExitLoop
     WEnd
 	Send("^{END}")
@@ -336,22 +559,132 @@ Func _GetDataDeliver($point)
     EndIf
     Sleep(1000)
     _ClipBoard_SetData($nmb51)
-    ControlSend($title1, "", "[CLASS:Edit; INSTANCE:1; ID:1001]", ClipGet() & "{ENTER}")
+    ControlSend($title1, "", "[CLASS:Edit; INSTANCE:1; ID:1001]", '+{INS}' & "{ENTER}")
 	While 1
 	   WinActivate($title1)
 	      If ControlGetFocus($title1) <> "SAPALVGrid1" Then ExitLoop
     WEnd
     Return $point
-EndFunc    
+EndFunc
 
-Func _chooseData()
+Func _GetDataStock($point)
+    WinWait( $title0, "", 0 )
+	If WinExists( $title0 ) Then
+		WinActivate( $title0 )
+    EndIf
+       WinSetState($title0,"",@SW_MAXIMIZE)
+       _ClipBoard_SetData($nzmb52)
+	   ControlSend($title0, "", "[CLASS:Edit; INSTANCE:1; ID:1001]", '+{INS}' & "{ENTER}")
+	   WinWait( $title4, "", 0 )
+	If WinExists( $title4 ) Then
+		WinActivate( $title4, "" )
+	EndIf
+	While 1
+	   WinActivate($title4)
+		   If WinActivate( $title4, "" ) Then ExitLoop
+	WEnd
+	Send("{BACKSPACE}")
+    Send("^{a}")
+    _ClipBoard_SetData($artMin4)
+    Send('+{INS}')
+	Send("{TAB}")
+    _ClipBoard_SetData($artMax4)
+    Send('+{INS}')
+	Send("{TAB 2}")
+    _ClipBoard_SetData($sewPlant)
+    Send('+{INS}')
+	Send("{DOWN}")
+	Send("^{a}")
+	Send("{DEL}")
+	Send("{DOWN 9}")
+	Send("+{TAB}")
+	Send("{DOWN}")
+	Send("{TAB}")
+	Send("^{a}")
+    _ClipBoard_SetData($q3new)
+    Send('+{INS}')
+	Send("{F8}")
+	Sleep(5000)
+	While 1
+	   WinActivate($title4)
+		  If ControlGetFocus($title4) == "SAPALVGrid1" Then ExitLoop
+	WEnd
+    Send("^{END}")
+    _ClipBoard_SetData($vData)
+	Sleep(3000)
+	Send('^{c}')
+	$point = ClipGet()
+	$point = StringRegExpReplace($point,'(\d)\s','\1')
+    $point = StringLeft($point, StringInStr($point, ",") - 1)
+    _clear()
+    Return $point
+EndFunc
+
+Func _GetDataCooisOldOrders($point, $layout)
+    WinWait( $title0, "", 0 )
+	If WinExists( $title0 ) Then
+		WinActivate( $title0 )
+    EndIf
+       WinSetState($title0,"",@SW_MAXIMIZE)
+       _ClipBoard_SetData($ncoois)
+	   ControlSend($title0, "", "[CLASS:Edit; INSTANCE:1; ID:1001]", '+{INS}' & "{ENTER}")
+	   WinWait( $title2, "", 0 )
+	If WinExists( $title2 ) Then
+		WinActivate( $title2, "" )
+	EndIf
+	While 1
+	   WinActivate($title2)
+		   If WinActivate( $title2, "" ) Then ExitLoop
+	WEnd
+	Sleep(1000)
+	Send('{tab}')
+    Send('^{a}')
+    _ClipBoard_SetData($layout)
+    Send('+{INS}')
+    Send('{tab 6}')
+    _ClipBoard_SetData($artMin4)
+    Send('+{INS}')
+    Send('{tab}')
+    _ClipBoard_SetData($artMax4)
+    Send('+{INS}')
+    Send('{tab 2}')
+    _ClipBoard_SetData($cutPlant)
+    Send('+{INS}')
+	Send("{DOWN 11}")
+    _ClipBoard_SetData($proc)
+    Send('+{INS}')
+	Send("{DOWN 18}")
+    Send("{TAB 2}")
+    _ClipBoard_SetData($sDatePast)
+    Send('+{INS}')
+	Send('{F8}')
+	Sleep(5000)
+	WinWait( $title3, "", 0 )
+	While 1
+	   WinActivate( $title3, "" )
+		  If WinExists( $title3 ) Then ExitLoop
+	WEnd
+	Sleep(3000)
+	Send("{TAB 10}")
+    Send('^{END}')
+    _ClipBoard_SetData($vData)
+	Sleep(3000)
+	Send('^{c}')
+	$point = ClipGet()
+	$point=StringRegExpReplace($point,'(\d)\s','\1')
+    Sleep(3000)
+    _clear()
+    Return $point
+EndFunc
+
+Func _chooseData($sDatePast)
 	WinWait( $title0, "", 0 )
 	If WinExists( $title0 ) Then
 		WinActivate( $title0 )
     EndIf
         _ClipBoard_SetData($nmb51)
 	    WinSetState($title0,"",@SW_MAXIMIZE)
-	    ControlSend($title0, "", "[CLASS:Edit; INSTANCE:1; ID:1001]",  _ClipBoard_GetData() & "{ENTER}")
+	    ControlSend($title0, "", "[CLASS:Edit; INSTANCE:1; ID:1001]",  '+{INS}' & "{ENTER}")
 	    WinWait( $title1, "", 0 )
 	If WinExists( $title1 ) Then
 	    WinActivate( $title1, "" )
@@ -369,7 +702,11 @@ Func _chooseData()
     $Q3RB60 = _GetDataDeliver($Q3RB60)
     $Q3RC40 = _GetDataDeliver($Q3RC40)
     $Q3RC60 = _GetDataDeliver($Q3RC60)
-    ControlSend($title1, "", "[CLASS:Edit; INSTANCE:1; ID:1001]", "/n" & "{ENTER}")
+    _clear()
+    $audiStockOrders = _GetDataStock($audiStockOrders)
+    $skodaStockOrders = _GetDataStock($skodaStockOrders)
+    $audiOldOrders = _GetDataCooisOldOrders($audiOldOrders, $q3old)
+    $skodaOldOrders = _GetDataCooisOldOrders($skodaOldOrders, $sk383old)
 EndFunc
 
 Func _quit()
