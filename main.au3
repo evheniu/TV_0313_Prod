@@ -1,3 +1,6 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=C:\Users\evhen\OneDrive\Рабочий стол\Logo_Bader\BADER.ico
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
 #include <AutoItConstants.au3>
@@ -31,6 +34,8 @@ $title3 = "Order Info System - Order Headers"
 $title4 = "Display Warehouse Stocks of Material on Hand"
 
 $vData = "0"
+$timeToSleep = "30000"
+
 $nmb51 = "/nmb51"
 $artMin4 = "4000000"
 $artMax4 = "4999999"
@@ -56,6 +61,9 @@ Global $Q3RB40 = "0"
 Global $Q3RB60 = "0"
 Global $Q3RC40 = "0"
 Global $Q3RC60 = "0"
+Global $SKRB40 = "0"
+Global $SKRB60 = "0"
+Global $SKRC = "0"
 
 Global $audiOldOrders = 'Оновлення даних...'
 Global $skodaOldOrders = 'Оновлення даних...'
@@ -335,8 +343,89 @@ Func _ShowDeliveredOrdersAudi()
     _SetColor($Q3RC60, 220, 750, $Q3RC60l)
 EndFunc
 
-Func _delDelivered()
+Func _delDeliveredAudi()
     GUIDelete($winDelivered)
+EndFunc
+
+
+
+Func _ShowDeliveredOrdersSkoda()
+    Global $winDeliveredSkoda = GUICreate("Statistic monitor 0313",700,700,-1,-1,-1,BitOr($WS_EX_TOPMOST,$WS_EX_OVERLAPPEDWINDOW))
+    GUICtrlCreateLabel("Доставлені замовлення / Dedicated orders",0,10,700,70,$SS_CENTER,-1)
+    GUICtrlSetFont(-1,50,400,0,"MS Sans Serif")
+    GUICtrlSetBkColor(-1,"-2")
+    $SKRB40l = GUICtrlCreateLabel("SK RB 40",20,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetBkColor(-1,"-2")
+    $SKRB40Dl = GUICtrlCreateLabel($SKRB40,115,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+    GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor(-1,"-2")
+    $SKRB60l = GUICtrlCreateLabel("SK RB 60",235,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetBkColor(-1,"-2")
+    $SKRB60Dl = GUICtrlCreateLabel($SKRB60,330,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+    GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor(-1,"-2")
+    $SKRCl = GUICtrlCreateLabel("SK RC",450,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetBkColor(-1,"-2")
+    $SKRCDl = GUICtrlCreateLabel($SKRC,545,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+    GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor(-1,"-2")
+    $target_for_skoda = GUICtrlCreateLabel("Ціль Skoda на складі швейного цеху по компонентах",0,420,700,30,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+    GUICtrlSetFont(-1,30,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($target_for_skoda, 0x00428df5)
+    ;~ Static data for description (create func ?) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    $Q3FBNORMlt = GUICtrlCreateLabel('SK RB 40', 20, 480, 120, 30, BitOR($ES_AUTOVSCROLL, $SS_LEFT))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    $Q3FBNORMlt = GUICtrlCreateLabel('<105', 100, 480, 40, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, $COLOR_RED)
+    $Q3FBNORMlt = GUICtrlCreateLabel('150-350', 137, 480, 54, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, $COLOR_YELLOW)
+    $Q3FBNORMlt = GUICtrlCreateLabel('>350', 190, 480, 35, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, 0x0011DD15)
+    $Q3FBNORMlt = GUICtrlCreateLabel('SK RB 60', 235, 480, 120, 30, BitOR($ES_AUTOVSCROLL, $SS_LEFT))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    $Q3FBNORMlt = GUICtrlCreateLabel('<105', 315, 480, 40, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, $COLOR_RED)
+    $Q3FBNORMlt = GUICtrlCreateLabel('150-350', 352, 480, 54, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, $COLOR_YELLOW)
+    $Q3FBNORMlt = GUICtrlCreateLabel('>350', 405, 480, 35, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, 0x0011DD15)
+    $Q3FBNORMlt = GUICtrlCreateLabel('SK RC ', 450, 480, 120, 30, BitOR($ES_AUTOVSCROLL, $SS_LEFT))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    $Q3FBNORMlt = GUICtrlCreateLabel('<105', 525, 480, 40, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, $COLOR_RED)
+    $Q3FBNORMlt = GUICtrlCreateLabel('105-350', 562, 480, 54, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, $COLOR_YELLOW)
+    $Q3FBNORMlt = GUICtrlCreateLabel('>350', 615, 480, 35, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
+    GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
+    GUICtrlSetBkColor($Q3FBNORMlt, 0x0011DD15)
+    
+    GUISetState(@SW_SHOW,$winDeliveredSkoda)
+    GUISetState(@SW_MAXIMIZE)
+
+    _SetColor($SKRB40, 105, 350, $SKRB40Dl)
+    _SetColor($SKRB40, 105, 350, $SKRB40l)
+
+    _SetColor($SKRB60, 105, 350, $SKRB60Dl)
+    _SetColor($SKRB60, 105, 350, $SKRB60l)
+
+    _SetColor($SKRC, 105, 350, $SKRCDl)
+    _SetColor($SKRC, 105, 350, $SKRCl)
+
+EndFunc
+
+Func _delDeliveredSkoda()
+    GUIDelete($winDeliveredSkoda)
 EndFunc
 
 Func _ShowOldOrders()
@@ -470,6 +559,8 @@ Func _delStock()
     GUIDelete($mainWindowStock)
  EndFunc
 
+
+
 _start()
 
 Func _start()
@@ -487,6 +578,9 @@ Func _start()
         $Q3RB60 = "/Q3RB60"
         $Q3RC40 = "/Q3RC40"
         $Q3RC60 = "/Q3RC60"
+        $SKRB40 = "/SKRB40"
+        $SKRB60 = "/SKRB60"
+        $SKRC = "/SKRC"
         _chooseData($sDatePast)
         _delOld()
         _show()
@@ -494,16 +588,19 @@ EndFunc
 
 Func _show()
     $hTimer = TimerInit()
-    While TimerDiff($hTimer)<5*60*1000
+    While TimerDiff($hTimer)<15*60*1000
        _ShowOldOrders()
-       Sleep(30000)
+       Sleep($timeToSleep)
        _delOld()
        _ShowStockOrders()
-       Sleep(30000)
+       Sleep($timeToSleep)
        _delStock()
        _ShowDeliveredOrdersAudi()
-       Sleep(30000)
-       _delDelivered()
+       Sleep($timeToSleep)
+       _delDeliveredAudi()
+       _ShowDeliveredOrdersSkoda()
+       Sleep($timeToSleep)
+       _delDeliveredSkoda()
     WEnd
     Sleep(500)
     _start()
@@ -567,7 +664,7 @@ Func _GetDataDeliver($point)
     Return $point
 EndFunc
 
-Func _GetDataStock($point)
+Func _GetDataStock($point, $layout)
     WinWait( $title0, "", 0 )
 	If WinExists( $title0 ) Then
 		WinActivate( $title0 )
@@ -601,7 +698,7 @@ Func _GetDataStock($point)
 	Send("{DOWN}")
 	Send("{TAB}")
 	Send("^{a}")
-    _ClipBoard_SetData($q3new)
+    _ClipBoard_SetData($layout)
     Send('+{INS}')
 	Send("{F8}")
 	Sleep(5000)
@@ -702,9 +799,12 @@ Func _chooseData($sDatePast)
     $Q3RB60 = _GetDataDeliver($Q3RB60)
     $Q3RC40 = _GetDataDeliver($Q3RC40)
     $Q3RC60 = _GetDataDeliver($Q3RC60)
+    $SKRB40 = _GetDataDeliver($SKRB40)
+    $SKRB60 = _GetDataDeliver($SKRB60)
+    $SKRC = _GetDataDeliver($SKRC)
     _clear()
-    $audiStockOrders = _GetDataStock($audiStockOrders)
-    $skodaStockOrders = _GetDataStock($skodaStockOrders)
+    $audiStockOrders = _GetDataStock($audiStockOrders, $q3new)
+    $skodaStockOrders = _GetDataStock($skodaStockOrders, $sk38new)
     $audiOldOrders = _GetDataCooisOldOrders($audiOldOrders, $q3old)
     $skodaOldOrders = _GetDataCooisOldOrders($skodaOldOrders, $sk383old)
 EndFunc
