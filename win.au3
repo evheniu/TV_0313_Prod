@@ -1,54 +1,212 @@
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+#include <GUIConstants.au3>
+#include <EditConstants.au3>
 
-;~ Show window with delivered orders
+Global $Q3N1MFB = "/Q3N1MFB"
+Global $Q3FB = "/Q3FB"
+Global $Q3N1HFB = "/Q3N1HFB" 
+Global $Q3N1MFC = "/Q3N1MFC"
+Global $Q3FC = "/Q3FC"
+Global $Q3RB40 = "/Q3RB40"
+Global $Q3RB60 = "/Q3RB60"
+Global $Q3RC40 = "/Q3RC40"
+Global $Q3RC60 = "/Q3RC60"
+Global $SKRB40 = "/SKRB40"
+Global $SKRB60 = "/SKRB60"
+Global $SKRC = "/SKRC"
+
+Global $audiOldOrders = 'Оновлення даних...'
+Global $skodaOldOrders = 'Оновлення даних...'
+
+Global $audiStockOrders = ''
+Global $skodaStockOrders = ''
+
+Func _SetColor($data, $min, $max, $labelID)
+	If $data = 'Оновлення даних...' Then
+		GUICtrlSetBkColor(-1,"-2")
+	ElseIf $data < $min Then
+        GUICtrlSetBkColor($labelID, 0x0011DD15)
+     ElseIf $data >= $min And $data <= $max Then
+        GUICtrlSetBkColor($labelID, $COLOR_YELLOW)
+     ElseIf $data > $max Then
+        GUICtrlSetBkColor($labelID, $COLOR_RED)
+     EndIf
+EndFunc
+
+Func _SetColor_r($data, $min, $max, $labelID)
+	If $data < $min Then
+        GUICtrlSetBkColor($labelID, $COLOR_RED )
+     ElseIf $data >= $min And $data <= $max Then
+        GUICtrlSetBkColor($labelID, $COLOR_YELLOW)
+     ElseIf $data > $max Then
+        GUICtrlSetBkColor($labelID, 0x0011DD15)
+     EndIf
+EndFunc
+
+Func _CrateWinOldOrders()
+	Global $win_old_orders = GUICreate("Statistic monitor 0313",1000,1000,-1,-1,$WS_OVERLAPPEDWINDOW,BitOr($WS_EX_TOPMOST,$WS_EX_OVERLAPPEDWINDOW))
+	GUICtrlCreateLabel("Старі замовлення / Old orders",10,10,980,80,$SS_CENTER,-1)
+	GUICtrlSetFont(-1,50,400,0,"MS Sans Serif")
+	GUICtrlSetBkColor(-1,"-2")
+	$audi_l = GUICtrlCreateLabel("Audi",10,100,980,150,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetFont(-1,40,400,0,"MS Sans Serif")
+	$audi_d = GUICtrlCreateLabel($audiOldOrders,10,250,980,200,$SS_CENTER,-1)
+	GUICtrlSetFont(-1,90,400,0,"MS Sans Serif")
+	$skoda_l = GUICtrlCreateLabel("Skoda",10,400,980,150,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetFont(-1,40,400,0,"MS Sans Serif")
+	$skoda_d = GUICtrlCreateLabel($skodaOldOrders,10,550,980,150,$SS_CENTER,-1)
+	GUICtrlSetFont(-1,90,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("Ціль залишку не закритих замовлень, шт./день в розкрійному цеху",10,700,980,40,$SS_CENTER,-1)
+	GUICtrlSetBkColor(-1, 0x00428df5  )
+	GUICtrlSetFont(-1,20,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("AUDI",0,740,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlCreateLabel("<500",250,740,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, 0x0011DD15)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("500-700",500,740,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, $COLOR_YELLOW)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel(">700",750,740,240,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, $COLOR_RED)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel(">300",750,800,240,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, $COLOR_RED)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("200-300",500,800,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, $COLOR_YELLOW)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("<200",250,800,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, 0x0011DD15)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("SKODA",0,800,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlSetBkColor(-1,"-2")
+
+	_SetColor($audiOldOrders, 500, 700, $audi_l)
+	_SetColor($audiOldOrders, 500, 700, $audi_d)
+	_SetColor($skodaOldOrders, 200, 300, $skoda_l)
+	_SetColor($skodaOldOrders, 200, 300, $skoda_d)
+	GUISetState(@SW_SHOW,$win_old_orders)
+	GUISetState(@SW_MAXIMIZE,$win_old_orders);@SW_MAXIMIZE
+
+EndFunc
+
+Func _DeleteWinOldOrders()
+    GUIDelete($win_old_orders)
+EndFunc
+
+; Вікно з доставленими на склад замовленнями
+
+Func _CrateWinStockOrders()
+	Global $win_stock_orders = GUICreate("Statistic monitor 0313",1000,1000,-1,-1,$WS_OVERLAPPEDWINDOW,BitOr($WS_EX_TOPMOST,$WS_EX_OVERLAPPEDWINDOW))
+	GUICtrlCreateLabel("На складі / Stock level",10,10,980,80,$SS_CENTER,-1)
+	GUICtrlSetFont(-1,50,400,0,"MS Sans Serif")
+	GUICtrlSetBkColor(-1,"-2")
+	$audi_l = GUICtrlCreateLabel("Audi",10,100,980,150,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetFont(-1,40,400,0,"MS Sans Serif")
+	$audi_d = GUICtrlCreateLabel($audiStockOrders,10,250,980,200,$SS_CENTER,-1)
+	GUICtrlSetFont(-1,90,400,0,"MS Sans Serif")
+	$skoda_l = GUICtrlCreateLabel("Skoda",10,400,980,150,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetFont(-1,40,400,0,"MS Sans Serif")
+	$skoda_d = GUICtrlCreateLabel($skodaStockOrders,10,550,980,150,$SS_CENTER,-1)
+	GUICtrlSetFont(-1,90,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("Ціль кіллькості на складі, шт./день",10,700,980,40,$SS_CENTER,-1)
+	GUICtrlSetBkColor(-1, 0x00428df5  )
+	GUICtrlSetFont(-1,20,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("AUDI",0,740,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlCreateLabel("<8500",250,740,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, $COLOR_RED)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("8500-8700",500,740,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, $COLOR_YELLOW)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel(">8700",750,740,240,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, 0x0011DD15)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel(">2400",750,800,240,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, 0x0011DD15)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("2200-2400",500,800,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, $COLOR_YELLOW)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("<2200",250,800,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetBkColor(-1, $COLOR_RED)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlCreateLabel("SKODA",0,800,250,50,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	GUICtrlSetFont(-1,30,400,0,"MS Sans Serif")
+	GUICtrlSetBkColor(-1,"-2")
+
+	_SetColor_r($audiStockOrders, 8500, 8700, $audi_l)
+	_SetColor_r($audiStockOrders, 8500, 8700, $audi_d)
+	_SetColor_r($skodaStockOrders, 2200, 2400, $skoda_l)
+	_SetColor_r($skodaStockOrders, 2200, 2400, $skoda_d)
+	GUISetState(@SW_SHOW,$win_stock_orders)
+	GUISetState(@SW_MAXIMIZE,$win_stock_orders);@SW_MAXIMIZE
+
+EndFunc
+
+Func _DeleteWinStockOrders()
+    GUIDelete($win_stock_orders)
+EndFunc
+
+;~ Вікно відданих замовлень ауді
+
 Func _ShowDeliveredOrdersAudi()
-    Global $winDelivered = GUICreate("Statistic monitor 0313",700,700,-1,-1,-1,BitOr($WS_EX_TOPMOST,$WS_EX_OVERLAPPEDWINDOW))
+    Global $win_Delivered = GUICreate("Statistic monitor 0313",700,700,-1,-1,-1,BitOr($WS_EX_TOPMOST,$WS_EX_OVERLAPPEDWINDOW))
     GUICtrlCreateLabel("Доставлені замовлення / Dedicated orders",0,10,700,70,$SS_CENTER,-1)
     GUICtrlSetFont(-1,50,400,0,"MS Sans Serif")
-    GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetBkColor(-1,"-2")
     $Q3FBNORMl = GUICtrlCreateLabel("Q3 FB Norm",20,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3FBNORMDl = GUICtrlCreateLabel($Q3N1MFB,115,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3FCNORMl = GUICtrlCreateLabel("Q3 FC Norm",235,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3FCNORMDl = GUICtrlCreateLabel($Q3N1MFC,330,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3RB60l = GUICtrlCreateLabel("Q3 RB 60",450,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3RB60Dl = GUICtrlCreateLabel($Q3RB60,545,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3FBSPl = GUICtrlCreateLabel("Q3 FB Sp",20,210,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3FBSPDl = GUICtrlCreateLabel($Q3FB,115,210,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3FCSPl = GUICtrlCreateLabel("Q3 FC Sp",235,210,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3FCSPDl = GUICtrlCreateLabel($Q3FC,330,210,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3RC40l = GUICtrlCreateLabel("Q3 RC 40",450,210,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3RC40Dl = GUICtrlCreateLabel($Q3RC40,545,210,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3RB40l = GUICtrlCreateLabel("Q3 RB 40",235,294,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3RB40Dl = GUICtrlCreateLabel($Q3RB40,330,294,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3RC60l = GUICtrlCreateLabel("Q3 RC 60",450,294,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3RC60Dl = GUICtrlCreateLabel($Q3RC60,545,294,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
@@ -57,7 +215,7 @@ Func _ShowDeliveredOrdersAudi()
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $Q3FBSSPl = GUICtrlCreateLabel("Q3 FB Ssp",20,294,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $target_for_audi = GUICtrlCreateLabel("Ціль Audi на складі швейного цеху по компонентах",0,420,700,30,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,30,700,0,"MS Sans Serif")
@@ -163,42 +321,34 @@ Func _ShowDeliveredOrdersAudi()
     GUICtrlSetFont(-1,27,700,0,"MS Sans Serif")
     GUICtrlSetBkColor($Q3FBNORMlt, 0x0011DD15)
 
-    GUISetState(@SW_SHOW,$winDelivered)
-    GUISetState()
-
-    _SetColor($Q3N1MFB, 170, 570, $Q3FBNORMDl)
-    _SetColor($Q3N1MFB, 170, 570, $Q3FBNORMl)
-
-    _SetColor($Q3FB, 180, 600, $Q3FBSPDl)
-    _SetColor($Q3FB, 180, 600, $Q3FBSPl)
-
-    _SetColor($Q3N1HFB, 30, 90, $Q3FBSSPDl)
-    _SetColor($Q3N1HFB, 30, 90, $Q3FBSSPl)
-
-    _SetColor($Q3N1MFC, 160, 550, $Q3FCNORMDl)
-    _SetColor($Q3N1MFC, 160, 550, $Q3FCNORMl)
-
-    _SetColor($Q3FC, 220, 750, $Q3FCSPDl)
-    _SetColor($Q3FC, 220, 750, $Q3FCSPl)
-
-    _SetColor($Q3RB40, 220, 750, $Q3RB40Dl)
-    _SetColor($Q3RB40, 220, 750, $Q3RB40l)
+	GUISetState(@SW_SHOW,$win_Delivered)
+	GUISetState(@SW_MAXIMIZE,$win_Delivered)
     
-    _SetColor($Q3RB60, 220, 750, $Q3RB60Dl)
-    _SetColor($Q3RB60, 220, 750, $Q3RB60l)
-
-    _SetColor($Q3RC40, 220, 750, $Q3RC40Dl)
-    _SetColor($Q3RC40, 220, 750, $Q3RC40l)
-    
-    _SetColor($Q3RC60, 220, 750, $Q3RC60Dl)
-    _SetColor($Q3RC60, 220, 750, $Q3RC60l)
+    _SetColor_r($Q3N1MFB, 170, 570, $Q3FBNORMDl)
+    _SetColor_r($Q3N1MFB, 170, 570, $Q3FBNORMl)
+    _SetColor_r($Q3FB, 180, 600, $Q3FBSPDl)
+    _SetColor_r($Q3FB, 180, 600, $Q3FBSPl)
+    _SetColor_r($Q3N1HFB, 30, 90, $Q3FBSSPDl)
+    _SetColor_r($Q3N1HFB, 30, 90, $Q3FBSSPl)
+    _SetColor_r($Q3N1MFC, 160, 550, $Q3FCNORMDl)
+    _SetColor_r($Q3N1MFC, 160, 550, $Q3FCNORMl)
+    _SetColor_r($Q3FC, 220, 750, $Q3FCSPDl)
+    _SetColor_r($Q3FC, 220, 750, $Q3FCSPl)
+    _SetColor_r($Q3RB40, 220, 750, $Q3RB40Dl)
+    _SetColor_r($Q3RB40, 220, 750, $Q3RB40l)
+    _SetColor_r($Q3RB60, 220, 750, $Q3RB60Dl)
+    _SetColor_r($Q3RB60, 220, 750, $Q3RB60l)
+    _SetColor_r($Q3RC40, 220, 750, $Q3RC40Dl)
+    _SetColor_r($Q3RC40, 220, 750, $Q3RC40l)
+    _SetColor_r($Q3RC60, 220, 750, $Q3RC60Dl)
+    _SetColor_r($Q3RC60, 220, 750, $Q3RC60l)
 EndFunc
 
 Func _delDeliveredAudi()
-    GUIDelete($winDelivered)
+    GUIDelete($win_Delivered)
 EndFunc
 
-
+;~ Вікно відданих замовлень Шкода
 
 Func _ShowDeliveredOrdersSkoda()
     Global $winDeliveredSkoda = GUICreate("Statistic monitor 0313",700,700,-1,-1,-1,BitOr($WS_EX_TOPMOST,$WS_EX_OVERLAPPEDWINDOW))
@@ -206,19 +356,19 @@ Func _ShowDeliveredOrdersSkoda()
     GUICtrlSetFont(-1,50,400,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $SKRB40l = GUICtrlCreateLabel("SK RB 40",20,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $SKRB40Dl = GUICtrlCreateLabel($SKRB40,115,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $SKRB60l = GUICtrlCreateLabel("SK RB 60",235,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $SKRB60Dl = GUICtrlCreateLabel($SKRB60,330,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $SKRCl = GUICtrlCreateLabel("SK RC",450,120,95,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
-    GUICtrlSetFont(-1, 30, 700, 0, $sFont)
+    GUICtrlSetFont(-1, 30, 700, 0, "MS Sans Serif")
     GUICtrlSetBkColor(-1,"-2")
     $SKRCDl = GUICtrlCreateLabel($SKRC,545,120,110,70,BitOr($SS_CENTER,$SS_NOTIFY),-1)
     GUICtrlSetFont(-1,50,700,0,"MS Sans Serif")
@@ -262,150 +412,17 @@ Func _ShowDeliveredOrdersSkoda()
     GUICtrlSetBkColor($Q3FBNORMlt, 0x0011DD15)
     
     GUISetState(@SW_SHOW,$winDeliveredSkoda)
-    GUISetState()
+    GUISetState(@SW_MAXIMIZE,$winDeliveredSkoda)
 
-    _SetColor($SKRB40, 105, 350, $SKRB40Dl)
-    _SetColor($SKRB40, 105, 350, $SKRB40l)
-
-    _SetColor($SKRB60, 105, 350, $SKRB60Dl)
-    _SetColor($SKRB60, 105, 350, $SKRB60l)
-
-    _SetColor($SKRC, 105, 350, $SKRCDl)
-    _SetColor($SKRC, 105, 350, $SKRCl)
+    _SetColor_r($SKRB40, 105, 350, $SKRB40Dl)
+    _SetColor_r($SKRB40, 105, 350, $SKRB40l)
+    _SetColor_r($SKRB60, 105, 350, $SKRB60Dl)
+    _SetColor_r($SKRB60, 105, 350, $SKRB60l)
+    _SetColor_r($SKRC, 105, 350, $SKRCDl)
+    _SetColor_r($SKRC, 105, 350, $SKRCl)
 
 EndFunc
 
 Func _delDeliveredSkoda()
     GUIDelete($winDeliveredSkoda)
 EndFunc
-
-Func _ShowOldOrders()
-
-	Global $mainWindow = GUICreate("Statistic monitor 0313", 700, 700, -1, -1, $WS_OVERLAPPEDWINDOW, $WS_EX_TOPMOST)
-	Global $sFont = "Arial"
-	GUISetFont(50,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-	GUICtrlCreateLabel('Старі замовлення / Old orders', 10, 10, 680, 50, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(30,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-	Global $idLabelAudiFon = GUICtrlCreateLabel('Audi', 10, 70, 680, 120, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(110,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idLabelAudi = GUICtrlCreateLabel($audiOldOrders, 10, 150, 680, 180, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(30,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-	Global $idLabelSkodaFon = GUICtrlCreateLabel('Skoda', 10, 330, 680, 100, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(110,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idLabelSkoda = GUICtrlCreateLabel($skodaOldOrders, 10, 410, 680, 165, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(25,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-	Global $idDescri = GUICtrlCreateLabel('Ціль залишку не закритих замовлень, шт./день в розкрійному цеху', 10, 577, 680, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idDescri, 0x00428df5  );tut
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idGreenAudi = GUICtrlCreateLabel('Audi < 500', 10, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idGreenAudi, 0x0011DD15)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idYellowAudi = GUICtrlCreateLabel('Audi 500 - 700', 240, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idYellowAudi, $COLOR_YELLOW)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idRedAudi = GUICtrlCreateLabel('Audi > 700', 470, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idRedAudi, $COLOR_RED)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idGreenSk = GUICtrlCreateLabel('Skoda < 200', 10, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idGreenSk, 0x0011DD15)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idYellowSk = GUICtrlCreateLabel('Skoda 200 - 300', 240, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idYellowSk, $COLOR_YELLOW)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idRedSk = GUICtrlCreateLabel('Skoda > 300', 470, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idRedSk, $COLOR_RED)
-
-    GUISetState(@SW_SHOW,$mainWindow)
-	GUISetState();@SW_MAXIMIZE
-
-	If $skodaOldOrders < 200 Then
-		  GUICtrlSetBkColor($idLabelSkoda, 0x0011DD15)
-		  GUICtrlSetBkColor($idLabelSkodaFon, 0x0011DD15)
-	   ElseIf $skodaOldOrders >= 200 And $skodaOldOrders <= 300 Then
-		  GUICtrlSetBkColor($idLabelSkoda, $COLOR_YELLOW)
-		  GUICtrlSetBkColor($idLabelSkodaFon, $COLOR_YELLOW)
-	   ElseIf $skodaOldOrders > 300 Then
-		  GUICtrlSetBkColor($idLabelSkoda, $COLOR_RED)
-		  GUICtrlSetBkColor($idLabelSkodaFon, $COLOR_RED)
-	   EndIf
-
-	If $audiOldOrders < 500 Then
-		  GUICtrlSetBkColor($idLabelAudi, 0x0011DD15)
-		  GUICtrlSetBkColor($idLabelAudiFon, 0x0011DD15)
-	   ElseIf $audiOldOrders >= 500 And $audiOldOrders <= 700 Then
-		  GUICtrlSetBkColor($idLabelAudi, $COLOR_YELLOW)
-		  GUICtrlSetBkColor($idLabelAudiFon, $COLOR_YELLOW)
-	   ElseIf $audiOldOrders > 700 Then
-		  GUICtrlSetBkColor($idLabelAudi, $COLOR_RED)
-		  GUICtrlSetBkColor($idLabelAudiFon, $COLOR_RED)
-	   EndIf
-EndFunc
-
-Func _delOld()
-    GUIDelete($mainWindow)
-EndFunc
-
-Func _ShowStockOrders()
-
-	Global $mainWindowStock = GUICreate("Statistic monitor 0313", 700, 700, -1, -1, $WS_OVERLAPPEDWINDOW, $WS_EX_TOPMOST)
-	GUISetFont(50,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-	GUICtrlCreateLabel('Замовлення на складі / Stock level', 10, 10, 680, 50, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(30,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-	Global $idLabelAudiFonStock = GUICtrlCreateLabel('Audi', 10, 70, 680, 120, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(110,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idLabelAudiStock = GUICtrlCreateLabel($audiStockOrders, 10, 150, 680, 180, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(30,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-	Global $idLabelSkodaFonStock = GUICtrlCreateLabel('Skoda', 10, 330, 680, 100, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(110,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idLabelSkodaStock = GUICtrlCreateLabel($skodaStockOrders, 10, 410, 680, 165, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUISetFont(25,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-	Global $idDescriStock = GUICtrlCreateLabel('Ціль замовлень на складі швейного цеху, шт./день', 10, 577, 680, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idDescriStock, 0x00428df5);tut
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idGreenAudiStock = GUICtrlCreateLabel('Audi > 8700', 10, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idGreenAudiStock, 0x0011DD15)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idYellowAudiStock = GUICtrlCreateLabel('Audi 8500 - 8700', 240, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idYellowAudiStock, $COLOR_YELLOW)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idRedAudiStock = GUICtrlCreateLabel('Audi < 8500', 470, 610, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idRedAudiStock, $COLOR_RED)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idGreenSkStock = GUICtrlCreateLabel('Skoda > 2400', 10, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idGreenSkStock, 0x0011DD15)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idYellowSkStock = GUICtrlCreateLabel('Skoda 2200 - 2400', 240, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-	GUICtrlSetBkColor($idYellowSkStock, $COLOR_YELLOW)
-	GUISetFont(20,  $FW_NORMAL, $GUI_FONTITALIC, $sFont)
-	Global $idRedSkStock = GUICtrlCreateLabel('Skoda < 2200', 470, 660, 220, 30, BitOR($ES_AUTOVSCROLL, $SS_CENTER))
-    GUICtrlSetBkColor($idRedSkStock, $COLOR_RED)
-    
-    GUISetState(@SW_SHOW,$mainWindowStock)
-	GUISetState();@SW_MAXIMIZE
-
-	If $skodaStockOrders > 2400 Then
-		  GUICtrlSetBkColor($idLabelSkodaStock, 0x0011DD15)
-		  GUICtrlSetBkColor($idLabelSkodaFonStock, 0x0011DD15)
-	   ElseIf $skodaStockOrders >= 2200 And $skodaStockOrders <= 2400 Then
-		  GUICtrlSetBkColor($idLabelSkodaStock, $COLOR_YELLOW)
-		  GUICtrlSetBkColor($idLabelSkodaFonStock, $COLOR_YELLOW)
-	   ElseIf $skodaStockOrders < 2200 Then
-		  GUICtrlSetBkColor($idLabelSkodaStock, $COLOR_RED)
-		  GUICtrlSetBkColor($idLabelSkodaFonStock, $COLOR_RED)
-	   EndIf
-
-	If $audiStockOrders > 8700 Then
-		  GUICtrlSetBkColor($idLabelAudiStock, 0x0011DD15)
-		  GUICtrlSetBkColor($idLabelAudiFonStock, 0x0011DD15)
-	   ElseIf $audiStockOrders >= 8500 And $audiStockOrders <= 8700 Then
-		  GUICtrlSetBkColor($idLabelAudiStock, $COLOR_YELLOW)
-		  GUICtrlSetBkColor($idLabelAudiFonStock, $COLOR_YELLOW)
-	   ElseIf $audiStockOrders < 8500 Then
-		  GUICtrlSetBkColor($idLabelAudiStock, $COLOR_RED)
-		  GUICtrlSetBkColor($idLabelAudiFonStock, $COLOR_RED)
-	   EndIf
-EndFunc
-
-Func _delStock()
-    GUIDelete($mainWindowStock)
- EndFunc
