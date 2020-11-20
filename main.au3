@@ -54,8 +54,10 @@ Global $skodaStockOrders = ''
 
 ; Todays date
 Func _Date($iReturnTime = 1)
+
    Return @MDAY & '.' & @MON & '.' & @YEAR
 EndFunc
+
 ; Todays date substract one week
 Dim $aDate = StringSplit(@MDAY & '/' & @MON & '/' & @YEAR, '/')
 
@@ -163,14 +165,16 @@ Func _start()
    $SKRC = "/SKRC"
    _CrateWinOldOrders()
    Sleep(1000)
+   BlockInput($BI_DISABLE)
    _Get_Data_SAP()
+   BlockInput($BI_ENABLE)
    _DeleteWinOldOrders()
    _show()
 EndFunc
 
 Func _show()
    $hTimer = TimerInit()
-   While TimerDiff($hTimer)<30*60*1000
+   While TimerDiff($hTimer)<25*60*1000
       _CrateWinOldOrders()
       Sleep(30000)
       _DeleteWinOldOrders()
@@ -222,11 +226,12 @@ Func _Coois($point, $layout)
    Send("{TAB 10}")
    Send('^{END}')
 	Sleep(3000)
-	Send('^{c}')
+	Send('^{INS}')
 	$point = ClipGet()
 	$point=StringRegExpReplace($point,'(\d)\s','\1')
-   Sleep(3000)
+   Sleep(1000)
    _clear()
+
    Return $point
 EndFunc  
 
@@ -256,20 +261,21 @@ Func _Stock($point, $layout)
    _ClipBoard_SetData($layout)
     Send('+{INS}')
    Send("{F8}")
+   _ClipBoard_SetData("0")
    While 1
 	   WinActivate($title4)
 		If ControlGetFocus($title4) == "SAPALVGrid1" Then ExitLoop
    WEnd
    Sleep(1000)
    Send("^{END}")
-   _ClipBoard_SetData("0")
 	Sleep(1000)
-	Send('^{c}')
+	Send('^{INS}')
 	$point = ClipGet()
 	$point = StringRegExpReplace($point,'(\d)\s','\1')
    $point = StringLeft($point, StringInStr($point, ",") - 1)
-   _clear()
    Sleep(1000)
+   _clear()
+   
    Return $point
 EndFunc
 
@@ -305,17 +311,23 @@ Func _GetDataDeliver($point)
    _ClipBoard_SetData($point)
    Send('+{INS}')
    Send("{F8}")
+   _ClipBoard_SetData("0")
    While 1
       WinActivate($title1)
       If ControlGetFocus($title1) == "SAPALVGrid1" Then ExitLoop
    WEnd
-   _ClipBoard_SetData("0")
-   Send("^{END}")
    Sleep(1000)
-   Send('^{c}')
-   $point = ClipGet()
-   $point=StringRegExpReplace($point,'(\d)\s','\1')
+   Send("^{END}")
+	Sleep(1000)
+	Send('^{INS}')
+	$point = ClipGet()
+   $point = StringRegExpReplace($point,'(\d)\s','\1')
+   If $point = '' Then
+      $point = "0"
+   EndIf
+   Sleep(1000)
    _clear()
+   
    Return $point
 EndFunc
 
