@@ -1,6 +1,3 @@
-#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=C:\Users\evhen\OneDrive\Рабочий стол\Logo_Bader\BADER.ico
-#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <Date.au3>
 #include <ColorConstants.au3>
 #include <GUIConstantsEx.au3>
@@ -11,6 +8,17 @@
 Opt("SendKeyDelay", 150)
 Opt( "SendKeyDownDelay", 50 )
 HotKeySet("{ESC}", "_quit")
+
+Global $sPath_ini = @ScriptDir & "\data.ini"
+
+If FileExists($sPath_ini) Then
+   FileDelete($sPath_ini)
+EndIf
+
+IniWrite($sPath_ini, "coois", "audiOldOrders","Loading...")
+IniWrite($sPath_ini, "coois", "skodaOldOrders", "Loading...")
+
+FileSetAttrib(@ScriptDir & "\data.ini", "+H")
 
 $title0 = "SAP Easy Access"
 $title1 = "Material Document List"
@@ -332,40 +340,41 @@ Func _GetDataDeliver($point)
 EndFunc
 
 Func _Get_Data_SAP()
-   $audiOldOrders = _Coois($audiOldOrders, $q3old)
+   IniWrite($sPath_ini, "coois", "audiOldOrders", _Coois($audiOldOrders, $q3old))
    WinWaitActive($title0)
-   $skodaOldOrders = _Coois($skodaOldOrders, $sk383old)
+   IniWrite($sPath_ini, "coois", "skodaOldOrders", _Coois($skodaOldOrders, $sk383old))
    WinWaitActive($title0)
-   $audiStockOrders = _Stock($audiStockOrders, $q3new)
+   IniWrite($sPath_ini, "Stock", "audiStockOrders", _Stock($audiStockOrders, $q3new))
    WinWaitActive($title0)
-   $skodaStockOrders = _Stock($skodaStockOrders, $sk38new)
+   IniWrite($sPath_ini, "Stock", "skodaStockOrders", _Stock($skodaStockOrders, $sk38new))
    WinWaitActive($title0)
-   $Q3N1MFB = _GetDataDeliver($Q3N1MFB)
+   IniWrite($sPath_ini, "Q3", "Q3N1MFB", _GetDataDeliver($Q3N1MFB))
    WinWaitActive($title0)
-   $Q3FB = _GetDataDeliver($Q3FB)
+   IniWrite($sPath_ini, "Q3", "Q3FB", _GetDataDeliver($Q3FB))
    WinWaitActive($title0)
-   $Q3N1HFB = _GetDataDeliver($Q3N1HFB)
+   IniWrite($sPath_ini, "Q3", "Q3N1HFB", _GetDataDeliver($Q3N1HFB))
    WinWaitActive($title0)
-   $Q3N1MFC = _GetDataDeliver($Q3N1MFC)
+   IniWrite($sPath_ini, "Q3", "Q3N1MFC", _GetDataDeliver($Q3N1MFC))
    WinWaitActive($title0)
-   $Q3FC = _GetDataDeliver($Q3FC)
+   IniWrite($sPath_ini, "Q3", "Q3FC", _GetDataDeliver($Q3FC))
    WinWaitActive($title0)
-   $Q3RB40 = _GetDataDeliver($Q3RB40)
+   IniWrite($sPath_ini, "Q3", "Q3RB40", _GetDataDeliver($Q3RB40))
    WinWaitActive($title0)
-   $Q3RB60 = _GetDataDeliver($Q3RB60)
+   IniWrite($sPath_ini, "Q3", "Q3RB60", _GetDataDeliver($Q3RB60))
    WinWaitActive($title0)
-   $Q3RC40 = _GetDataDeliver($Q3RC40)
+   IniWrite($sPath_ini, "Q3", "Q3RC40", _GetDataDeliver($Q3RC40))
    WinWaitActive($title0)
-   $Q3RC60 = _GetDataDeliver($Q3RC60)
+   IniWrite($sPath_ini, "Q3", "Q3RC60", _GetDataDeliver($Q3RC60))
    WinWaitActive($title0)
-   $SKRB40 = _GetDataDeliver($SKRB40)
+   IniWrite($sPath_ini, "SK38", "SKRB40", _GetDataDeliver($SKRB40))
    WinWaitActive($title0)
-   $SKRB60 = _GetDataDeliver($SKRB60)
+   IniWrite($sPath_ini, "SK38", "SKRB60", _GetDataDeliver($SKRB60))
    WinWaitActive($title0)
-   $SKRC = _GetDataDeliver($SKRC)
+   IniWrite($sPath_ini, "SK38", "SKRC", _GetDataDeliver($SKRC))
    WinWaitActive($title0)
 EndFunc
 
 Func _quit()
+   FileDelete($sPath_ini)
 	Exit
 EndFunc
