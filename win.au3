@@ -5,18 +5,18 @@
 #include <GUIConstants.au3>
 #include <EditConstants.au3>
 
-$sPath_ini = @ScriptDir & "\data.ini"
+Global $sPath_ini = @ScriptDir & "\data.ini"
 
 Func _SetColor($data, $min, $max, $labelID)
 	If $data = 'Loading...' Then
 		GUICtrlSetBkColor(-1,"-2")
 	ElseIf $data < $min Then
         GUICtrlSetBkColor($labelID, 0x0011DD15)
-     ElseIf $data >= $min And $data <= $max Then
+    ElseIf $data >= $min And $data <= $max Then
         GUICtrlSetBkColor($labelID, $COLOR_YELLOW)
-     ElseIf $data > $max Then
+    ElseIf $data > $max Then
         GUICtrlSetBkColor($labelID, $COLOR_RED)
-     EndIf
+    EndIf
 EndFunc
 
 Func _SetColor_r($data, $min, $max, $labelID)
@@ -90,13 +90,13 @@ Func _CrateWinStockOrders()
 	GUICtrlCreateLabel("На складі / Stock level",10,10,980,80,$SS_CENTER,-1)
 	GUICtrlSetFont(-1,50,400,0,"Arial")
 	GUICtrlSetBkColor(-1,"-2")
-	$audi_l = GUICtrlCreateLabel("Audi",10,100,980,150,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	$audi_sl = GUICtrlCreateLabel("Audi",10,100,980,150,BitOr($SS_CENTER,$SS_NOTIFY),-1)
 	GUICtrlSetFont(-1,60,400,0,"Arial")
-	$audi_d = GUICtrlCreateLabel(IniRead($sPath_ini, "Stock", "audiStockOrders", "0"),10,250,980,200,$SS_CENTER,-1)
+	$audi_sd = GUICtrlCreateLabel(IniRead($sPath_ini, "Stock", "audiStockOrders", "0"),10,250,980,200,$SS_CENTER,-1)
 	GUICtrlSetFont(-1,90,400,0,"Arial")
-	$skoda_l = GUICtrlCreateLabel("Skoda",10,400,980,150,BitOr($SS_CENTER,$SS_NOTIFY),-1)
+	$skoda_sl = GUICtrlCreateLabel("Skoda",10,400,980,150,BitOr($SS_CENTER,$SS_NOTIFY),-1)
 	GUICtrlSetFont(-1,60,400,0,"Arial")
-	$skoda_d = GUICtrlCreateLabel(IniRead($sPath_ini, "Stock", "skodaStockOrders", "0"),10,550,980,150,$SS_CENTER,-1)
+	$skoda_sd = GUICtrlCreateLabel(IniRead($sPath_ini, "Stock", "skodaStockOrders", "0"),10,550,980,150,$SS_CENTER,-1)
 	GUICtrlSetFont(-1,90,400,0,"Arial")
 	GUICtrlCreateLabel("Ціль кіллькості на складі, шт./день",10,700,980,40,$SS_CENTER,-1)
 	GUICtrlSetBkColor(-1, 0x00428df5  )
@@ -126,10 +126,10 @@ Func _CrateWinStockOrders()
 	GUICtrlSetFont(-1,30,400,0,"Arial")
 	GUICtrlSetBkColor(-1,"-2")
 
-	_SetColor_r(IniRead($sPath_ini, "Stock", "audiStockOrders", "0"), 8500, 8700, $audi_l)
-	_SetColor_r(IniRead($sPath_ini, "Stock", "audiStockOrders", "0"), 8500, 8700, $audi_d)
-	_SetColor_r(IniRead($sPath_ini, "Stock", "skodaStockOrders", "0"), 2200, 2400, $skoda_l)
-	_SetColor_r(IniRead($sPath_ini, "Stock", "skodaStockOrders", "0"), 2200, 2400, $skoda_d)
+	_SetColor_r(IniRead($sPath_ini, "Stock", "audiStockOrders", "0"), 8500, 8700, $audi_sl)
+	_SetColor_r(IniRead($sPath_ini, "Stock", "audiStockOrders", "0"), 8500, 8700, $audi_sd)
+	_SetColor_r(IniRead($sPath_ini, "Stock", "skodaStockOrders", "0"), 2200, 2400, $skoda_sl)
+	_SetColor_r(IniRead($sPath_ini, "Stock", "skodaStockOrders", "0"), 2200, 2400, $skoda_sd)
 	GUISetState(@SW_SHOW,$win_stock_orders)
 	GUISetState(@SW_MAXIMIZE,$win_stock_orders);@SW_MAXIMIZE
 
